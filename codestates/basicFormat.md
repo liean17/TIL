@@ -1,4 +1,4 @@
-# Code States OrienTation & Restart
+# Day 
 
 ## 코드스테이츠
 
