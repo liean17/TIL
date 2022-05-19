@@ -21,13 +21,6 @@
     
 * 총평
 
-    
----
-
-## 개인공부
-* 오늘의 목표
-
-* 
 
 ---
 블로그 : https://zazilgure.tistory.com/
