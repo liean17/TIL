@@ -104,3 +104,68 @@ public static void main(String[] args){}
 스택이 아래가 막힌 직사각형 통이라면 큐는 빨대처럼 아래위가 뚫린 통에 비유된다.  
 이런 특성으로 처음 들어온 것이 가장 먼저 나가는 **FIFO**의 특성을 가진다.
 
+**자바에서 큐**
+```
+Queue<Integer> queue = new LinkedList<>(); // queue는 LinkedList를 통해 구현할 수 있다.
+queue.add(1);     // queue에 값 1 추가
+queue.add(2);     // queue에 값 2 추가
+queue.offer(3);   // queue에 값 3 추가
+---------------------------
+출구  1 <- 2 <- 3        입구
+---------------------------
+//스택과 마찬가지로 저장한 순서대로 안쪽부터 데이터가 쌓인다.
+
+queue.pop();
+queue.pop();
+queue.pop();
+     ---------------------------
+1 <- 2 <- 3                  입구
+     ---------------------------
+//스택과 다르게 저장된 순서대로 출력된다.
+```
+
+### 2.1 큐의 활용
+
+* 요청받은 순서대로 요청을 처리하는 시나리오를 모델링 하는데 흔하게 쓰인다.  
+ex)은행 대기표, 인터넷 쇼핑몰 물건 구매
+
+---
+### 연습문제 풀이
+
+1. *전화를 건 사람을 잠시 대기시킨 후 "다음 연결 가능한 통화원"에게 연결해 주는 콜센터 소프트웨어를 작성 중 이라면 스택을 쓰겠는가 큐를 쓰겠는가?*
+ - 큐 를 써야한다. 전화가 온 순서대로 업무가 처리되어야하는데 스택을 사용한다면 가장 나중에 전화를 건 사람이 먼저 서비스를 받는 상황이 생긴다
+2. *1,2,3,4,5,6의 순서대로 스택에 수를 푸시한 후 두 항목을 팝 하면 스택에서 어떤 수를 읽는가?*
+ - 마지막과 그 전에 푸시한 6과 5를 순서대로 읽어온다.
+3. *1,2,3,4,5,6의 순서대로 큐에 수를 푸시한 후 두 항목을 팝 하면 큐에서 어떤 수를 읽는가?*
+ - 처음과 그 다음에 삽입한 1과 2를 순서대로 읽어온다.
+4. *스택을 사용해 문자열을 거꾸로 만드는 함수를 작성하라.*
+```
+import java.util.Stack;
+
+class Practice {
+    public static void main(String[] args) {
+        String str = "ABCDEFG";
+
+        String answer = "";
+
+        char[] chars = str.toCharArray();
+        
+        Stack<Character> stack = new Stack<>();
+
+        for (char c : chars) {
+            stack.push(c);
+        }
+        
+        int stackSize = stack.size();
+        
+        for (int i = 0;i<stackSize;i++) {
+            answer+=stack.pop();
+        }
+        
+        System.out.println("answer = " + answer);
+        
+        //출력결과 : answer = GFEDCBA
+    }
+}
+```
+- 스택의 크기가 계속 변해서 for문 이전에 변수를 선언해서 수를 고정시켰다.
