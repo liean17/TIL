@@ -133,6 +133,8 @@ Example.builder()
     .build();
 ```
 
+---
+
 ## 2.1.2 JpaRepository
 Repository는 MyBatis에서는 Dao라고 불리는 DB 레이어 접근자다.  
 단순히 인터페이스를 생성 후, JpaRepository<Entity 클래스, PK 타입>를 상속하면 기본적인 CRUD메소드가 자동으로 생성된다.
@@ -183,6 +185,8 @@ public class PostsRepositoryTest {
 1. postsRepository.save()  
 테이블에 insert/update 쿼리를 실행한다.  
 id값이 있다면 update, 없다면 insert 쿼리가 실행된다.
+
+---
 
 ## 2.2 등록/수정/조회 API
 API를 만들기 위해서는 총 3개의 클래스가 필요하다
@@ -308,6 +312,180 @@ class PostsApiControllerTest {
 ```
 전에 쓰던 @WebMvcTest를 쓰지 않은 이유는 JPA 기능이 작동하지 않기 때문이다.
 
+---
+## 2.4 Update, Response
+PostsApiController 추가
+```java
+    @PutMapping("/api/v1/posts/{id}")
+    public Long update(@PathVariable Long id, @RequestBody PostsUpdateRequestDto requestDto){
+        return postsService.update(id,requestDto);
+    }
+    
+    @GetMapping("/api/v1/posts/{id}")
+    public PostsResponseDto findById(@PathVariable Long id){
+        return postsService.findById(id);
+    }
+```
+PostsResponseDto
+```java
+@Getter
+public class PostsResponseDto {
+
+    private Long id;
+    private String title;
+    private String content;
+    private String author;
+
+    public PostsResponseDto(Posts entity) {
+        this.id = entity.getId();
+        this.title = entity.getTitle();
+        this.content = entity.getContent();
+        this.author = entity.getAuthor();
+    }
+}
+```
+Entity의 필드 중 일부만 사용하기 때문에 생성자로 Entity를 받아서 필드 값을 채운다.  
+굳이 모든 필드를 가진 생성자가 필요하지 않기 때문이다.
+
+PostsUpdateDto
+```java
+@Getter
+@NoArgsConstructor
+public class PostsUpdateRequestDto {
+    
+    private String title;
+    private String content;
+    
+    @Builder
+    public PostsUpdateRequestDto(String title, String content){
+        this.title;
+        this.content;
+    }
+}
+```
+Posts에 update메서드 추가
+```java
+public void update(String title, String content){
+        this.title = title;
+        this.content = content;
+    }
+```
+PostsService에 update와 findById추가
+```java
+@Transactional
+public Long update(Long id, PostsUpdateRequestDto requestDto){
+    Posts posts = postsRepository.findById(id)
+            .orElseThrow(()-> new IllegalArgumentException("해당 게시글이 없습니다. id= "+id));
+
+    posts.update(requestDto.getTitle(),requestDto.getContent());
+    return id;
+}
+
+public PostsResponseDto findById(Long id){
+    Posts entity = postsRepository.findById(id)
+            .orElseThrow(()-> new IllegalArgumentException("해당 게시글이 없습니다. id= "+id));
+    return new PostsResponseDto(entity);
+}
+```
+update 기능에서 쿼리를 날리지 않는다.  
+JPA의 핵심내용인 영속성 컨텍스트 덕분이다.  
+JPA의 엔티티 매니저가 활성화된 상태로 **트랜잭션 안에서 데이터베이스에서 데이터를 가져오면** 이 데이터는 영속성 컨텍스트가 유지된 상태다.  
+이 상태에서 데이터 값을 변경하면 **트랜잭션이 끝나는 시점에 해당 테이블에 변경분을 반영**한다. 따라서 Entity객체의 값만 변경하면 별도로 쿼리를 날릴 필요가 없는 것이다.
+이 개념을 **더티 체킹**이라고 한다.  
+저자 블로그 : https://jojodu.tistory.com/415
+
+---
+
+## 2.4.1 Update 테스트  
+
+```java
+    @Test
+    @DisplayName("수정되었다.")
+    void Posts_Update() throws Exception{
+        //given
+        Posts savedPosts = postsRepository.save(Posts.builder()
+                        .title("title")
+                        .content("content")
+                        .author("author")
+                        .build());
+
+        Long updateId = savedPosts.getId();
+        String expectedTitle = "title2";
+        String expectedContent = "content2";
+
+        PostsUpdateRequestDto requestDto = PostsUpdateRequestDto.builder()
+                .title(expectedTitle)
+                .content(expectedContent)
+                .build();
+
+        String url = "http://localhost:" + port + "/api/v1/posts/"+updateId;
+
+        HttpEntity<PostsUpdateRequestDto> requestEntity = new HttpEntity<>(requestDto);
+
+        //when
+        ResponseEntity<Long> responseEntity = restTemplate.exchange(url, HttpMethod.PUT,requestEntity,Long.class);
+
+        //then
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(responseEntity.getBody()).isGreaterThan(0L);
+
+        List<Posts> all = postsRepository.findAll();
+        assertThat(all.get(0).getTitle()).isEqualTo(expectedTitle);
+        assertThat(all.get(0).getContent()).isEqualTo(expectedContent);
+    }
+```
+
+---
+### 2.5 JPA Auditing으로 생성시간/수정시간 자동화  
+도메인에 아래 클래스를 추가
+```java
+@Getter
+@MappedSuperclass // 1
+@EntityListeners(AuditingEntityListener.class) // 2
+public abstract class BaseTimeEntity {
+    
+    @CreatedDate // 3
+    private LocalDateTime createDate;
+    
+    @LastModifiedDate // 4
+    private LocalDateTime modifiedDate;
+}
+```
+1. JPA Entity 클래스들이 BaseTimeEntity를 상속할 경우 필드들도 칼럼으로 인식하도록 한다.
+2. Auditing 기능(시간을 자동으로 넣어주는 기능)을 포함시킨다.
+3. Entity가 생성되어 저장될 때 시간이 자동 저장된다.
+4. 조회한 Entity의 값이 변경될 때 시간이 자동 저장된다.
+
+이후 Posts가 위 클래스를 상속받도록 변경하고,  
+Application 클래스에 @EnableJpaAuditing 어노테이션을 추가하면 된다.
+
+### 테스트코드
+
+```java
+    @Test
+    @DisplayName("시간 자동 저장")
+    void BaseTimeEntity() {
+        //given
+        LocalDateTime now = LocalDateTime.of(2022,6,13,0,0,0);
+        postsRepository.save(Posts.builder()
+                .title("title")
+                .content("content")
+                .author("KDK")
+                .build());
+        //when
+        List<Posts> postsList = postsRepository.findAll();
+
+        //then
+        Posts posts = postsList.get(0);
+
+        System.out.println(">>>>>>>>> createDate="+posts.getCreateDate()+", modifiedDate="+posts.getModifiedDate());
+
+        assertThat(posts.getCreateDate()).isAfter(now);
+        assertThat(posts.getModifiedDate()).isAfter(now);
+    }
+```
+
+---
 ## 기타
 
 - MyBatis는 ORM이 아닌 SQL Mapper에 해당한다  
