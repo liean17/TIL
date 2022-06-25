@@ -75,3 +75,46 @@ public interface UserRepository extends JpaRepository<User, Long> {
 }
 ```
 1. 소셜 로그인으로 반환되는 값 중 email을 통해 이미 생성된 사용자인지 아닌지를 판단하기 위한 메소드
+
+---
+
+### 3. 시큐리티 설정  
+
+compile('org.springframework.boot:spring-boot-starter-oauth2-client') 의존성 추가  
+config.auth패키지 생성 후 SecurityConfig 클래스 생성  
+```java
+@RequiredArgsConstructor
+@EnableWebSecurity // 1
+public class SecurityConfig extends WebSecurityConfigurerAdapter{
+    private final CustomOAuth2UserService customOAuth2UserService;
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception{
+        http.csrf().disable()
+                .headers().frameOptions().disable() // 2
+                .and()
+                .authorizeRequests() // 3
+                .antMatchers("/","/css/**","/images/**",
+                        "/js/**","/h2-console/**").permitAll()
+                .antMatchers("/api/v1/**").hasRole(Role.USER.name()) // 4
+                .anyRequest().authenticated() // 5
+                .and()
+                .logout()// 6
+                .logoutSuccessUrl("/")
+                .and()
+                .oauth2Login() // 7
+                .userInfoEndpoint() // 8
+                .userService(customOAuth2UserService); // 9
+    }
+}
+```
+
+1. Spring Sevurity 설정 활성화
+2. h2-console 화면을 사용하기 위한 옵션
+3. URL별 권한 관리를 설정하는 옵션의 시작점  
+4. 권한 관리 대상을 지정하는 옵션
+5. 설정된 값 이외의 URL, authenticated를 추가해서 나머지는 인증된 사용자에게만 허용하도록 했다
+6. 로그아웃관련. 성공시 / 주소로 이동한다
+7. OAuth2 로그인 기능에 대한 여러 설정의 진입점
+8. OAuth2 로그인 성공 이후 사용자의 정보를 가져올때의 설정
+9. 소셜 로그인 성공시 후속 조치를 진행할 UserService 인터페이스의 구현체를 등록
