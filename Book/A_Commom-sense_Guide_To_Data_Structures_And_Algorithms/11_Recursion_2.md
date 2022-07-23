@@ -87,3 +87,47 @@ public static String reverse(String str){
         return reverse(str) + chars[0];
     }
 ```
+
+### X 세기
+문자열에 포함된 x의 갯수를 세는 함수를 작성한다.  
+문자열이 "axbxcxd"라면 하위 문제는 "xbcxd"이며 하위 문제에 대한 답은 3이다.  
+그리고 첫번째 문자가 x면 1을 더해주면 된다.  
+```java
+public static int countX(String str){
+    //기저조건
+    if(str.length()==0) return 0;
+
+    if(str.toCharArray()[0]=='x'){
+        return 1 + countX(str.substring(1,str.length()));
+    }
+    return countX(str.substring(1,str.length()));
+}
+```
+---
+### 계단 문제
+계단 갯수가 주어지고 한번에 1,2,3 계단씩 오를 수 있다고 할때 모든 경로의 갯수는?  
+앞선 문제들과 달리 단순하게 세기는 어렵다. 하지만 하향식으로 생각하면 쉬워진다.  
+10계단을오른다고 할때 하위 문제는 9계단까지 오르는 경우의 수 인가?  
+8계단에서 2계단, 7계단에서 3계단을 한번에 오르는 경우도 있다.  
+따라서 10계단을 오르는 경우 하위 문제는 9계단 + 8계단 + 7계단 을 오르는 경우의 수가 된다.  
+```java
+public static int numberOfPaths(int N){
+    return numberOfPaths(N-1) + numberOfPaths(N-2)+numberOfPaths(N-3); 
+    }
+```
+여기서 기저조건만 잘 해결해주면 된다.  
+```java
+public static int numberOfPaths(int N){
+    if(N<0) return 0;
+    if(N==1||N==0) return 1;
+
+    return numberOfPaths(N-1) + numberOfPaths(N-2)+numberOfPaths(N-3);
+    }
+```
+
+### 애너그램 생성
+주어진 문자열의 모든 애너그램을 반환하는 함수를 만들어본다.  
+애너그램은 문자열을 재배열한 조합이다.  
+문자열이 "abcd"라면 하위 문제는 "abc"이다.  
+"abc"의 모든 애너그램을 반환한 것에서 d를 각 위치마다 추가하면 "abcd"의 애너그램이 된다.  
+
