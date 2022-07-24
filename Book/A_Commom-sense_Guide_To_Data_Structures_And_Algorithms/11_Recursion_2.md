@@ -131,3 +131,48 @@ public static int numberOfPaths(int N){
 문자열이 "abcd"라면 하위 문제는 "abc"이다.  
 "abc"의 모든 애너그램을 반환한 것에서 d를 각 위치마다 추가하면 "abcd"의 애너그램이 된다.  
 
+---
+## 연습문제
+1. 문자열 배열을 받아 모든 문자열에 쓰인 문자 개수를 반환하는 함수를 재귀적으로 작성
+```java
+public static int strCount(String[] str){
+    if(str.length==1) return str[0].length();
+        
+    return str[0].length() + strCount(Arrays.copyOfRange(str,1,str.length));
+}
+```
+
+2. N번째 값은 N바로 앞의 숫자를 더한 삼각수 수열을 작성
+```java
+public static int tryNumbers(int N){
+    if(N==1) return 1;
+
+    return N + tryNumbers(N-1);
+    }
+```
+책에서 말한대로 진짜 과정 신경안썼는데 만들어졌다..
+
+3. 문자열을 받아 문자 "x"가 들어간 첫번째 인덱스를 반환하는 함수를 재귀적으로 작성
+```java
+public static int findX(String str){
+    char[] chars = str.toCharArray();
+    if (chars[0]=='x'){
+        return 0;
+    }else{
+        return 1 + findX(str.substring(1,str.length()));
+    }
+}
+```
+
+4. 격자판의 행과 열이 주어져있고 왼쪽 맨 위에서 오른쪽 맨 아래로 가는 최단경로를 계산하는 함수를 재귀적으로 작성(맞추지 못함)
+
+```java
+public static int findWay(int row, int column){
+    if(row==1 || column ==1) return 1;
+
+    return findWay(row-1,column) + findWay(row,column-1);
+    }
+```
+
+풀이 : 최단경로로 간다는 것은 위 혹은 왼쪽으로 이동하지않고 오른쪽, 아래로만 간다는 뜻이다.  
+즉 최단경로의 수는 그런 이동들의 합이다.

@@ -21,4 +21,3 @@
     1. 
 
 ---
-블로그 : https://zazilgure.tistory.com/
