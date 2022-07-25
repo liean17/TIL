@@ -199,3 +199,19 @@ public class UnCheckedAppTest {
 동시에 의존 관계에 대한 문제 역시 해결되었다.  
 
 > 런타임 예외는 놓칠 수 있기 때문에 문서화가 중요하다.  
+
+## 예외 포함과 스택 트레이스
+로그를 출력할 때 마지막 파라미터에 예외를 넣어주면 로그에 스택 트레이스를 출력할 수 있다.  
+```log.info("message={}", "message", ex)```  
+```java
+public void call(){
+    try{
+        runSQL();
+    } catch(SQLException e){
+        throw new RuntimeSQLException(e);
+    }
+}
+```
+위 처럼 예외를 던질때 기존 예외를 포함하면 로그에 기존 예외들도 출력된다.  
+즉 기존 예외를 포함시키지 않으면 발생한 예외에 대한 정확한 정보를 알 수 없다.  
+
