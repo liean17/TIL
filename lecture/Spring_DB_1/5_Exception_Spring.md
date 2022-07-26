@@ -49,3 +49,70 @@ Repository에서 예외를 던질때 해당 예외로 감싸면 체크예외이�
 스프링은 데이터 접근 계층에 대한 수십 가지의 예외를 정리해서 일관된 예외 계층을 제공한다.  
 RuntimeException을 상속받은 ```DataAccessException```이라는 것을 제공하는데  
 일시적인 예외인 ```Transient```와, 반복해서 실행하면 실패하는 ```NonTransient```두가지로 나뉜다.  
+
+```java
+//...
+private final SQLExceptionTranslator exTranslator;
+
+    public MemberRepositoryV4_2(DataSource dataSource, SQLExceptionTranslator exTranslator) {
+        this.dataSource = dataSource;
+        this.exTranslator = new SQLErrorCodeSQLExceptionTranslator(dataSource);
+    }
+    //...
+    catch (SQLException e) {
+        throw exTranslator.translate("save",sql,e);
+    }
+```
+DI받은 후 예외를 던질때 위 방식처럼만 해도 알아서 처리된다.  
+
+### JDBC 템플릿
+예외 처리 문제는 모두 해결되었고 코드 중복만 해결하면 된다.  
+```java
+/**
+ * JDBC Template 사용
+ */
+@Slf4j
+public class MemberRepositoryV5 implements MemberRepository{
+
+    private final JdbcTemplate template;
+
+    public MemberRepositoryV5(JdbcTemplate template) {
+        this.template = new JdbcTemplate(dataSource);
+    }
+
+
+    @Override
+    public Member save(Member member){
+        String sql = "insert into member(member_id, money) values (?,?)";
+        template.update(sql,member.getMemberId(),member.getMoney());
+        return member;
+        
+    }
+
+    public Member findById(String memberId){
+        String sql = "select * from member where member_id = ?";
+        Member member = template.queryForObject(sql, memberRowMapper(), memberId);
+        return member;
+    }
+
+    private RowMapper<Member> memberRowMapper() {
+        return (rs,rowNum)->{
+            Member member = new Member();
+            member.setMemberId(rs.getString("member_id"));
+            member.setMoney(rs.getInt("money"));
+            return member;
+        };
+    }
+
+    public void update(String memberId, int money){
+        String sql = "update member set money=? where member_id=?";
+        template.update(sql,money,memberId);
+        
+    }
+
+    public void delete(String memberId){
+        String sql = "delete from member where member_id=?";
+        template.update(sql,memberId);
+    }
+}
+```
