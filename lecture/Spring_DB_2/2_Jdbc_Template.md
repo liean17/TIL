@@ -89,3 +89,52 @@ public class JdbcTemplateItemRepositoryV1 implements ItemRepository {
 3. 최대 가격으로만 검색
 4. 상품명과 최대 가격 두가지로 검색  
 총 네가지 경우가 존재하게 된다.
+
+### 이름 바인딩
+sql 쿼리를 직접 작성할때 문제는 오타이다  
+특히 단순한 오타보다 바인딩 순서를 잘못 적으면 큰 문제가 발생한다.  
+예를들어 sql문에는 상품이름, 가격, 수량 순인데  
+상품이름, 수량, 가격 순으로 데이터를 넣게되면 가격과 수량이 뒤바뀌는 문제가 발생한다.  
+이는 코드수정뿐만 아니라 DB의 데이터를 복구해야 해결이 된다.  
+이러한 불편함에 NamedParameterJdbcTemplate가 생겼다.  
+```java
+@Slf4j
+public class JdbcTemplateItemRepositoryV2 implements ItemRepository {
+
+
+    private final NamedParameterJdbcTemplate template;
+
+    public JdbcTemplateItemRepositoryV2(DataSource dataSource) {
+        this.template = new NamedParameterJdbcTemplate(dataSource);
+    }
+
+    @Override
+    public Item save(Item item) {
+        String sql = "insert into item(item_name, price, quantity) values(:itemName,:price,:quantity)";
+
+        SqlParameterSource param = new BeanPropertySqlParameterSource(item);
+
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+
+        template.update(sql,param, keyHolder);
+
+        long key = keyHolder.getKey().longValue();
+        item.setId(key);
+        return item;
+    }
+    // 생략
+
+    private RowMapper<Item> itemRowMapper() {
+        return BeanPropertyRowMapper.newInstance(Item.class);//camel 변환 지원
+    }
+}
+```
+물음표가 아니라 직접적으로 이름을 지정해주는 방식으로 바인딩 오류를 예방한다.  
+안에서도 다양한 방식이 있는데 BeanPropertySqlParameterSource는 자바빈 규약에 맞게 자동으로 파라미터를 생성해준다.  
+단 Dto에 없는 id와 같은 값은 이 방식을 사용할 수 없다.  
+
+
+---
+### 정리
+JPA와 같은 ORM기술을 사용하면서 SQL문을 작성해야할때 Jdbc Template를 사용하면 간단하다.  
+하지만 동적쿼리를 사용하기 어려운 문제가 있는데 이를 해결할 수 있는게 MyBatis이다.
