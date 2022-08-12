@@ -23,3 +23,8 @@
 `sec:authorize="!isAuthenticated()"`  
 ! 문법도 사용가능하고 간단하게 권한 인증 여부를 판단해서 권한이 있으면 해당 div를 보여주지 않는다.  
 이뿐만 아니라 hasRole로 지정한 권한이 아닐경우의 여부도 분리 가능하다.
+
+- redirectAttributes 의 용도  
+: 리다이렉트를 할때 쿼리 파라미터, Path Variable를 전달해 준다.  
+우리가 사용하지 않아도 되었던 이유는 리다이렉트를 하지않았거나, 전달할 인자가 없었기 떄문.
+(https://velog.io/@neity16/6-%EC%8A%A4%ED%94%84%EB%A7%81-MVC-13-%ED%83%80%EC%9E%84%EB%A6%AC%ED%94%84-PRG-%ED%8C%A8%ED%84%B4-RedirectAttributes#redirectattributes)
