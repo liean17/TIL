@@ -113,6 +113,53 @@ private Node lift(Node node, Node nodeToDelete) {
 다음으로 찾는 값을 현재 노드와 비교한다. 작거나 큰 여부에 따라 재귀 호출로 다음 노드를 가져온다.  
 lift메서드는 후속자 노드를 찾아 위치를 변경하는 역할을 한다.  
 
+### 6. 이진 탐색 트리 다루기
+삽입과 삭제가 빠른 만큼, 데이터를 자주 수정하는 경우 유리하다.  
+예를 들어 보유하고 있는 책 리스트를 관리한다고 할때 알파벳 순으로 정렬하기 좋고, 추가와 삭제도 간단해진다.  
+이때 알파벳 순으로 정렬하기 위해서는 트리의 노드를 모두 빠짐없이 방문할 수 있어야 한다. 이것을 순회라고 한다.  
+그리고 알파벳 순으로 출력하려면 트리를 알파벳 순으로 순회해야한다.  
+```java
+public static void traversAndPrint(Node node){
+    if(node!=null) return; //기저조건
+    traversAndPrint(node.leftNode);
+    System.out.println(node.value);
+    traversAndPrint(node.rightNode);
+}
+```
+노드의 왼쪽자식이 존재하지 않을 때 까지 재귀로 탐색한 뒤 해당값을 출력한다.  
+그 다음 가장 마지막으로 탐색한 값의 오른쪽 값을 재귀로 탐색해서 출력한다.  
 
+---
+### 연습문제
+
+1. 이진 탐색 트리에서 가장 큰 값을 찾는 알고리즘 작성하기  
+: 오른쪽 노드가 존재하지않을때 까지 탐색 후 값을 출력
+
+2. 앞서 적은 코드는 **중위 순회** 방식이다. 전위 순회 방식으로 조회할 때의 차이를 적어라.
+:
+```java
+public static void traversAndPrint(Node node){
+    if(node!=null) return; //기저조건
+    System.out.println(node.value);
+    traversAndPrint(node.leftNode);
+    traversAndPrint(node.rightNode);
+}
+```
+중위 순회는 그림상 가장 왼쪽에 위치한 노드부터 출력하는 반면에  
+전위 순회는 순회하는 순서대로 출력하게된다.  
+즉 루트 노드부터 출력한다.  
+
+3. 후위 순회 방식으로 조회할 때의 차이를 적어라.
+:
+```java
+public static void traversAndPrint(Node node){
+    if(node!=null) return; //기저조건
+    traversAndPrint(node.leftNode);
+    traversAndPrint(node.rightNode);
+    System.out.println(node.value);
+}
+```
+좌우 노드를 탐색 후 출력한다.  
+왼쪽 마지막 전 노드부터 양쪽 노드를 출력하는 형태가된다.
 
 
