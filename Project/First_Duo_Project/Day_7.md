@@ -1,7 +1,7 @@
 # 첫번째 협업 프로젝트
 [리포지토리 링크](https://github.com/liean17/first-duo-project)
 
-# 오늘 한 것
+## 오늘 한 것
 - Validation 예외처리  
 Validation 어노테이션을 통해 처리한 유효성 검사 오류는  
 컨트롤러에서 @Valid와 BindingResult를 통해 간단하게 오류를 모아올 수 있다.  
