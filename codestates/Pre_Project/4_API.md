@@ -8,7 +8,7 @@
 - SpringRestdocs테스트  
 위 어플리케이션을 바탕으로 Restdocs 문서를 만들어봤다.
 
-- Mock Jsone데이터 생성  
+- Mock Json데이터 생성  
 프론트분들이 서버아닌 그냥 JSON 데이터를 원하셔서 만들어드렸다.
 
 ### 후기  
