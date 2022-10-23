@@ -8,16 +8,19 @@
 : 우리 서비스에서 날짜 정보는 두가지 형태로 받게된다.  
 첫번째는 구체적인 날짜를 지정하는 방법이고, 두번째는 요일을 지정해서 정기적인 모임을 만드는 방법이다.  
 첫번째의 경우에는 날짜를 그대로 저장해서 출력하면 되지만 요일의 경우에는 입출력 형식을 고민해야했다.  
-    ~~~java
-    //날짜로 받는 경우
-    private String date;
-    //요일로 받는 경우
-    private String[] dates = null;
-    ~~~
-    우선 입력은 요일을 나타내는 알파벳의 앞 3개를 저장하는 List형태(MON,WED,SUN)로 받도록했다.  
+    
+~~~java
+//날짜로 받는 경우
+private String date;
+//요일로 받는 경우
+private String[] dates = null;
+~~~
+
+우선 입력은 요일을 나타내는 알파벳의 앞 3개를 저장하는 List형태(MON,WED,SUN)로 받도록했다.  
 일단 여기서 문제가 있는데 RDB에서는 Column에 컬렉션타입을 그대로 저장할 수 없다.  
 따라서 어떻게 가공을 하던 테이블을 따로 만들던 해야했는데 단순히 날짜만 저장하는 형태라면 컨버터를 사용하는게 좋을 것 같다는 생각이 들었다.  
-    ```java
+    
+```java
     @Converter
     public class StringArrayConverter implements AttributeConverter<List<String>, String> {
     private static final String SPLIT_CHAR = ",";
@@ -40,13 +43,15 @@
                 .collect(Collectors.toList());
         }
     }
-    ```
-    ```java
-    //엔티티 코드
-    @Convert(converter = StringArrayConverter.class)
-    private List<String> dates;
-    ```
-    DB에 저장될때는 " , "로 연결된 하나의 문자열로 변환된다.  
+```
+
+```java
+//엔티티 코드
+@Convert(converter = StringArrayConverter.class)
+private List<String> dates;
+```
+
+DB에 저장될때는 " , "로 연결된 하나의 문자열로 변환된다.  
 그리고 엔티티에서 데이터를 사용할때는 " , "를 기준으로 분리된 list가 출력된다.  
 이렇게 분리된 list형태의 데이터를 사용해서 enum타입을 이용해 한글로 변환하여 응답데이터에 출력했다.  
 
@@ -190,13 +195,13 @@ Pet은 Member 안에서만 존재하며 Member가 없이 독립적으로 존재�
 클래스 하나에도 필요한 것인지에 대한 충분한 고민이 필요하다.
 
 ---
->Comment - 댓글 도메인
+> ## Comment - 댓글 도메인
 ---
 - 공지와 함께 가장 단순한 도메인이다.  
 CommunityId를 통해 등록되고, 이후 생성된 CommentId로 수정,삭제할 수 있다.  
 
 ---
->Notice - 공지 도메인
+> ## Notice - 공지 도메인
 ---
 - 댓글보다도 단순한 도메인이지만 애초에 엔티티일 필요가 없었다.
 
@@ -281,7 +286,6 @@ public class JwtExceptionFilter extends OncePerRequestFilter {
 >Util - 기타
 ---
 
-
 ### 아쉬웠던 점
 - 새로운 것을 거의 해보지 못한 점
 
@@ -293,11 +297,6 @@ public class JwtExceptionFilter extends OncePerRequestFilter {
 - 빠른 분업
 - 트러블 슈팅 기록
 - 매일 회의
-
-
-
-
-
 
 ---
 
