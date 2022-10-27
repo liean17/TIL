@@ -44,10 +44,35 @@ String jpql = "select m from Member m where m.username like '%kang%'";
     - 직접 - ':username' / query.setParameter("username","member1")
     - 위치기반(비추천) - '?1' / query.setParameter(1,"member1") - 위치가 밀릴 위험이 존재한다.  
 
+--- 
+
 - 프로젝션(SELECT)
     - 대상 : 엔티티, 임베디드 타입, 기본 타입
     - 여러타입 조회시  
         - Query 타입으로 조회(Object 리스트)
         - new 명령어 사용
             - ```"select new jpql.MemberDto(m.username,m.age) from Member m"```
-            
+
+- 페이징 
+    - API
+        - setFirstResult() : 시작
+        - setMaxResults() : 갯수
+
+- 조인 Join
+    - 내부 조인 : ```SELECT m FROM Member m [INNER] JOIN m.team t```
+    - 외부 조인 : ```SELECT m FROM Member m LEFT [OUTER] JOIN m.team t```
+    - 세타 조인 : ```select count(m) from Member m, Team t where m.username = t.name```
+    - ON 절을 활용한 조인 : 조인 필터링, 연관관계 없는 엔티티 외부 조인 가능
+        - 예 : 회원과 팀을 조인하는데, 팀 이름이 A인 팀만 조인  
+        ```SELECT m, t FROM Member m LEFT JOIN m.team t on t.name = 'A```
+
+- 서브 쿼리
+    - JPA는 WHERE, HAVING 절에서만 사용 가능하다.  
+    - 하이버네이트에서는 SELECT 절도 가능하나 FROM 절은 현재 불가능하다.
+
+- 타입 표현
+    - 문자 : 'hello'
+    - 숫자 : 10L, 10D, 10F
+    - Boolean : TRUE, FALSE
+    - ENUM : 패키지명을 포함한 전체(그대로 쓰면 복잡하기때문에 setParameter 사용)
+    - 엔티티 : TYPE(m) = Member
