@@ -4,6 +4,7 @@
 - public, private 서브넷을 분리한 배포
 - CodeDeploy를 사용한 배포자동화
 - HTTPS 배포
+- 퍼블릭 엑세스 차단 후 SDK를 사용한 이미지 관리
 
 ---
 ### 22.10.27
@@ -55,9 +56,80 @@
             - 80포트는 443으로 리다이렉트 설정해주면 더 깔끔하다.
         6. Route 53에 설정한 호스팅 영역에 레코드를 추가해서 ALB를 설정해준다.
 
+- S3에 이미지 업로드
+    - 과정
+        1. aws관련 의존성 추가
+        2. aws 접근을 위한 AwsConfig생성
+        ```java
+        @Configuration
+        public class AwsConfig {
+            @Value("${cloud.aws.credentials.access-key}")
+            private String iamAccessKey;
+            @Value("${cloud.aws.credentials.secret-key}")
+            private String iamSecretKey;
+            @Value("${cloud.aws.s3.region.stack}")
+            private String region = "ap-northeast-2";
+
+            @Bean
+            public AmazonS3Client amazonS3Client(){
+                BasicAWSCredentials basicAWSCredentials = new BasicAWSCredentials(iamAccessKey,iamSecretKey);
+                return (AmazonS3Client) AmazonS3ClientBuilder.standard()
+                        .withRegion(region)
+                        .withCredentials(new AWSStaticCredentialsProvider(basicAWSCredentials))
+                        .build();
+            }
+        }
+        ```
+        3. amazonS3Client를 이용해서 이미지 저장 메서드 추가
+        ```java
+            String storeFilename = fileStore.storeFile(file);
+
+            ObjectMetadata objectMetadata = new ObjectMetadata();
+            objectMetadata.setContentType(file.getContentType());
+            objectMetadata.setContentLength(file.getSize());
+
+            amazonS3Client.putObject(
+                    new PutObjectRequest(S3Bucket,storeFilename,file.getInputStream(),objectMetadata)
+                            .withCannedAcl(CannedAccessControlList.PublicRead)
+            );
+
+            String imagePath = amazonS3Client.getUrl(S3Bucket, storeFilename).toString();
+        ```
+
+        4. 버킷 권한 설정
+            - 퍼블릭 엑세스 차단(지금 방법은 ACL 퍼블릭 엑세스를 풀어줘야한다)
+            - 버킷 정책 설정  
+            ```json
+            {
+                "Version": "2012-10-17",
+                "Id": "Policy1666940934219",
+                "Statement": [
+                    {
+                        "Sid": "Stmt1666940930169",
+                        "Effect": "Allow",
+                        "Principal": "*",
+                        "Action": [
+                            "s3:DeleteObject",
+                            "s3:GetObject",
+                            "s3:ListBucket",
+                            "s3:PutObject",
+                            "s3:PutObjectAcl"
+                        ],
+                        "Resource": [
+                            "arn:aws:s3:::kdk-first-s3",
+                            "arn:aws:s3:::kdk-first-s3/*"
+                        ]
+                    }
+                ]
+            }
+            ```
+        5. 객체 소유권 편집
+            - ACL활성화
+        - CORS 설정     
 
 
-- 트러블슈팅
+
+- 트러블슈팅 : 221027
     - bastion 인스턴스 접속 불가  
     : SSH로 인스턴스에 접근하려하니 시간초과가 발생했다  
     -> 탄력적 IP를 할당하지 않고 private 주소로 요청해서 그랬다.  
@@ -68,3 +140,12 @@
     - 배포자동화 배포 단계에서 오류  
     : IAM 사용자 설정, 역할 설정을 완료하고 서로 연결을 해두지 않았다.  
     그리고 IAM설정을 하면 codedeploy를 재시작해줘야 한다.
+
+- 트러블슈팅 : 221028
+    - ACL 관련 오류
+        - 배포는 되었는데 이미지 업로드시 ACL관련 오류가 발생했다.  
+        퍼블릭 엑세스 관련 문제인 것 같아서 수정했지만 그대로였다.  
+        알고보니 객체 소유권 편집을 해줘야했다.
+    - 시큐리티에서 "//"를 받지 못하는 문제
+        - 기존에는 이미지를 파일이름만 저장해서 수정하는 과정에서 발생한 문제였다.  
+        전체 링크를 저장하도록 해서, 템플릿에도 전체 링크를 받도록 수정했다.
