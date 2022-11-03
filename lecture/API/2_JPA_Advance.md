@@ -126,4 +126,23 @@ in 쿼리로 일정 갯수를 한번에 조회해준다.
     }
     ```
 
+### V6 Dto 최적화_flat
+- jpql
+```java
+public List<OrderFlatDto> findAllByDto_flat() {
+    return em.createQuery(
+        "select new jpabook.jpashop.repository.order.query.OrderFlatDto(o.id, m.name, o.orderDate,o.status, d.address, i.name, oi.orderPrice, oi.count)" +
+                " from Order o" +
+                " join o.member m" +
+                " join o.delivery d" +
+                " join o.orderItems oi" +
+                " join oi.item i", OrderFlatDto.class)
+        .getResultList();
+```
+join의 결과, 한번에 조회가 가능하지만 데이터가 중복으로 들어가게된다.
+
+- 따라서 중복을 제거하는 작업을 애플리케이션에서 해줘야하고, 다른 dto와 출력을 맞추려면 반복문을 통한 매핑이 필요하다.  
+또 중복으로 인해서 페이징이 불가능하다.
+
+
 
