@@ -172,7 +172,13 @@ java와 동일한데
     컬렉션이나 범위에 포함되어 있다/포함되어 있지 않다
     - a..b  
     a부터 b까지의 범위 객체를 생성한다.
-
+    ```java
+    if(0<= score && score <= 100) return "A";
+    ```
+    ```kotlin
+    if(score in 0..100) return "A"
+    ```
+ 
 - 연산자 오버로딩  
 ```kotlin
 operator fun plus(other: Money):Money{
