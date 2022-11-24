@@ -72,3 +72,43 @@ List<Int?>?
 - 자바와 사용  
 가변, 불변을 구분하지 않는 자바와 사용할때는  
 Collections.unmodifiableMap()과 같은 메서드를 활용해야한다.  
+
+---
+
+## 다양한 함수
+- 확장함수  
+외부에서 생성되었지만 특정 클래스안에서 실행하는 함수  
+Java와의 호환을 목적으로 만들어졌다.  
+```kotlin
+fun String.lastChar(): Char{
+    return this[this.length - 1]
+}
+```
+확장하려는클래스. 을 통해 접근 가능  
+확장함수는 클래스 내의 private, protected 멤버를 가져올 수 없다.  
+또한 멤버함수와 동일한 확장함수를 만들면 멤버함수가 우선적으로 호출된다.  
+반대로 확장함수가 먼저 만들어졌다면 오류가 발생  
+그리고 확장함수는 현재 타입을 기준으로 호출된다.  
+자바에서는 정적 메소드 처럼 사용가능하다.  
+
+- infix중위함수  
+downTo, step 등  
+. () 를 생략하고 사용할 수 있는 함수
+- inline  
+함수를 호출하는 대신. 함수를 호출한 지점에 함수 본문을 입력하고 싶은 경우  
+함수를 파라미터로 전달할때 오버헤드를 줄이는 용도로 사용된다.  
+- 지역함수  
+함수 안에 선언하는 함수  
+```kotlin
+fun createPerson(firstName: String, lastName: String): Person{
+    fun validateName(name: String, fieldName: String){
+        if(name.isEmpty()){
+            throw IllegalArgumentException("${fieldName}"은 비어있을 수 없습니다. 현재 값 : $name)
+        }
+    }
+    validateName(firstName,"firstName")
+    validateName(lastName,"lastName")
+
+    return Person(firstName,lastName,1)
+}
+```
