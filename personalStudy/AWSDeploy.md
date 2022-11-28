@@ -15,8 +15,9 @@
     4. private 라우팅 테이블 설정
     5. private 인스턴스 생성
     6. 로드밸런서 설정
-    > NAT  
-    https://docs.aws.amazon.com/ko_kr/vpc/latest/userguide/VPC_NAT_Instance.html
+
+    > NAT      https://docs.aws.amazon.com/ko_kr/vpc/latest/userguide/VPC_NAT_Instance.html
+    
     7. 보안그룹 설정
         - *아웃 바운드는 모두 열어주고 인바운드로 통제한다.*
         - bastion host
@@ -154,3 +155,17 @@
     - 시큐리티에서 "//"를 받지 못하는 문제
         - 기존에는 이미지를 파일이름만 저장해서 수정하는 과정에서 발생한 문제였다.  
         전체 링크를 저장하도록 해서, 템플릿에도 전체 링크를 받도록 수정했다.
+
+- 트러블슈팅 : 221126
+    - bastion서버, private서버 접근 불가  
+        - bastion에서 private에 접근하려하니 시간초과도 아닌 계속 입력을 대기하는 문제가 발생했다.  
+        그러다가 나중에는 bastion서버 접근도 동일한 오류가 났다.  
+        알고보니 그냥 오타였다. 맥의 Page앱에서 따옴표를 다른 모양으로 인식해서 닫히지않은 따옴표를 계속 대기한것이었다.
+
+
+---
+### local -> remote 파일전달
+```
+scp -i '전달할때 사용될 key' '전달할 파일' ec2-user@address:/home/ec2-user
+
+```
