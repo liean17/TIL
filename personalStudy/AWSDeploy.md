@@ -31,14 +31,24 @@
 
 - 배포 자동화
     1. RDS, S3 생성(h2사용시 S3만 있어도 된다.)
+        - RDS 보안그룹 설정  
+            - 내 IP - 로컬
+            - server
+            - (선택) bastion - workbench 확인용
+            - RDS 생성에서 Mysql WorkBench 연결 테스트까지  
+        [참고](https://aws.amazon.com/ko/premiumsupport/knowledge-center/rds-connect-ec2-bastion-host/)  
+        vpc 설정하고 서브넷 그룹(private)을 생성해서 설정해준다.  
+        rds는 프라이빗 서버와만 통신하고 보안그룹을 통해 bastion에서 사용할 수 있게 된다.  
+
     2. AWS IAM 사용자 계정 생성, 역할 생성 및 사용자 계정과 연결
-    3. Gradle.yml 작성 - 배포 설정
+    3. Gradle.yml 작성 - 배포 설정  
+        - github에서 생성할때는 기본적으로 main 브랜치에서 배포하려하므로 다른 브랜치에서 사용하려면 IDE로 따로 만들어주거나 해야한다.  
     4. appspec.yml 작성 - 배포 권한, 경로설정
     5. deploy.sh - 배포 로그관련 설정
-    - RDS 보안그룹 설정  
-        - 내 IP - 로컬
-        - server
-        - (선택) bastion - workbench 확인용
+        - 위 두 파일은 commit되어야한다. 배포에 사용되니까
+        - application.yml파일이 필요하다. 비어있는 파일이라도 있어야한다.
+    6. AWS CodeDeploy에서 애플리케이션과 배포 그룹을 생성해야한다.  
+    
 
 ---
 ### 22.10.28
@@ -162,6 +172,14 @@
         그러다가 나중에는 bastion서버 접근도 동일한 오류가 났다.  
         알고보니 그냥 오타였다. 맥의 Page앱에서 따옴표를 다른 모양으로 인식해서 닫히지않은 따옴표를 계속 대기한것이었다.
 
+- 트러블슈팅 : 221202  
+    - 생성한 rds와 연결 실패(Mysql WorkBench)  
+    Mysql WorkBench를 사용해서 연결테스트를 하는데 계속 실패했다.  
+    인바운드도 열려있고 서브넷도 제대로 설정한것같은데 실패하길래 rds생성을 잘못했나 싶어 여러번 깔았다 지웠다.  
+    - 해결 : connection method를 잘못설정했다.  
+    Standard TCP/IP가 아니라 Standard TCP/TP over SSH를 선택해야했다.  
+    
+    
 
 ---
 ### local -> remote 파일전달
