@@ -35,7 +35,7 @@
             - 내 IP - 로컬
             - server
             - (선택) bastion - workbench 확인용
-            - RDS 생성에서 Mysql WorkBench 연결 테스트까지  
+        - RDS 생성에서 Mysql WorkBench 연결 테스트까지  
         [참고](https://aws.amazon.com/ko/premiumsupport/knowledge-center/rds-connect-ec2-bastion-host/)  
         vpc 설정하고 서브넷 그룹(private)을 생성해서 설정해준다.  
         rds는 프라이빗 서버와만 통신하고 보안그룹을 통해 bastion에서 사용할 수 있게 된다.  
@@ -178,7 +178,13 @@
     인바운드도 열려있고 서브넷도 제대로 설정한것같은데 실패하길래 rds생성을 잘못했나 싶어 여러번 깔았다 지웠다.  
     - 해결 : connection method를 잘못설정했다.  
     Standard TCP/IP가 아니라 Standard TCP/TP over SSH를 선택해야했다.  
-    
+
+- 트러블(슈팅x) : 221203
+    - 배포자동화 첫단계에서 계속 실패한다.  
+    codedeploy 로그를 살펴보니 iam 역할관련 문제인것같은데  
+    예전에 사용한것을 그대로 사용하는 만큼 역할은 제대로 설정되있을텐데 잘 되지않는다.  
+    어제도그렇고 기존에 사용하던것을 사용하다보니 여러 문제가 있었다.  
+    처음부터 다시하는게 좋아보인다.
     
 
 ---
