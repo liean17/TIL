@@ -80,7 +80,7 @@
         vpc 설정하고 서브넷 그룹(private)을 생성해서 설정해준다.  
         rds는 프라이빗 서버와만 통신하고 보안그룹을 통해 bastion에서 사용할 수 있게 된다.  
 
-    2. AWS IAM 사용자 계정 생성, 역할 생성 및 사용자 계정과 연결
+    2. AWS IAM 사용자 계정 생성, 역할 생성 및 사용자 계정과 server 인스턴스연결
     3. Gradle.yml 작성 - 배포 설정  
         - github에서 생성할때는 기본적으로 main 브랜치에서 배포하려하므로 다른 브랜치에서 사용하려면 IDE로 따로 만들어주거나 해야한다.  
     4. appspec.yml 작성 - 배포 권한, 경로설정
@@ -88,6 +88,8 @@
         - 위 두 파일은 commit되어야한다. 배포에 사용되니까
         - application.yml파일이 필요하다. 비어있는 파일이라도 있어야한다.
     6. AWS CodeDeploy에서 애플리케이션과 배포 그룹을 생성해야한다.  
+        - 배포그룹  
+        앞서 생성한 IAM역할을 설정해주고 서버가 될 인스턴스인 private 인스턴스를 태그에서 추가해준다.  
     
 
 ---
@@ -102,7 +104,8 @@
         2. Route 53에 호스팅 영역 설정.
         3. NS(NameServer)에 있는 값을 도메인을 구매한 곳에서 설정한다.
         4. ACM(aws 인증 매니저)에서 인증서 등록
-            - 주의 : 도메인 이름을 그냥 설정해도 되지만, 와일드카드(*)를 사용해서 서브도메인을 한번에 등록하면 좋다.
+            - 주의 : 도메인 이름을 그냥 설정해도 되지만, 와일드카드(*)를 사용해서 서브도메인을 한번에 등록하면 좋다.   
+            ex) *.kdksandbox.shop
         5. 로드밸런서에서 443(https)설정, Forward에서 타겟그룹을 설정하고, ACM 설정
             - 80포트는 443으로 리다이렉트 설정해주면 더 깔끔하다.
         6. Route 53에 설정한 호스팅 영역에 레코드를 추가해서 ALB를 설정해준다.
@@ -184,6 +187,7 @@
         대표적인 방법으로는 presignedUrl를 받아와서 제한을 두어 자료를 가져오는 방법이 있다.
 
 
+---
 
 - 트러블슈팅 : 221027
     - bastion 인스턴스 접속 불가  
@@ -219,7 +223,7 @@
     - 해결 : connection method를 잘못설정했다.  
     Standard TCP/IP가 아니라 Standard TCP/TP over SSH를 선택해야했다.  
 
-- 트러블(슈팅x) : 221203
+- 트러블(해결) : 221203
     - 배포자동화 첫단계에서 계속 실패한다.  
     codedeploy 로그를 살펴보니 iam 역할관련 문제인것같은데  
     예전에 사용한것을 그대로 사용하는 만큼 역할은 제대로 설정되있을텐데 잘 되지않는다.  
@@ -241,6 +245,42 @@
     그럼에도 접속이되지않아 로드밸런서를 살펴보니 리스너가 8080이라고 되어있었다.  
     외부요청이기때문에 80으로 설정해야했는데 오타가 난듯하다.
 
+- 트러블슈팅 : 221207
+    - 배포그룹 태그 이름  
+    인스턴스 태그 이름을 임의로 지정했더니 인스턴스를 찾지못했다.  
+    "Name"이라고 반드시 적어줘야한다.
+    - 토요일(221203)에 계속 배포에 실패했던 이유는..  
+    인스턴스에 역할을 설정해주지 않아서였다.  
+    - **502 혹은 504 오류 발생**
+        - github action에서 build를 확인하고, codedeploy에서 배포 성공을 확인했는데 alb주소로 접근하니 502, 504오류가 발생했다.  
+        - 검색해보니 대상그룹을 잘못선택하면 발생하는 alb관련 오류라고 한다.  
+        그래서 8080포트도 추가해봤는데 여전히 오류는 동일했다.  
+        - 아무리 고민해도 alb를 더 고칠 부분은 없어보였다.  
+        혹시나, 혹시나 싶어서 애초에 배포가 된건 맞는지 확인해보기로했다.  
+        deploy.log 를 확인해보니 db관련 오류로 어플리케이션이 실행되지않았다는 것을 알게되었다.  
+            - application.yml에서 생성한 dbsource를 mysql url로 수정하지않아서 인식에서 오류가 발생했다.  
+            > url 작성법  
+            ```yml
+            url : jdbc:mysql://[rds데이터베이스주소]:[DB포트]/[스키마이름]?useSSL=false&characterEncoding=UTF-8&serverTimezone=UTC
+            #예시
+            url : jdbc:mysql://my-refrigerator-db.cpsiwozgbc5e.ap-northeast-2.rds.amazonaws.com:3306/refrigerator?useSSL=false&characterEncoding=UTF-8&serverTimezone=UTC
+            ```
+        - Batch관련  
+        ```'batch_job_instance' doesn't exist```  
+        batch를 사용하기 위해서는 데이터베이스에 springbatch 정보를 저장하는 테이블을 생성해줘야한다.   
+        다음 설정을 추가해서 자동으로 테이블이 생성되게 해주면 된다.  
+        ```yml
+        batch:
+            jdbc:
+                initialize-schema: always
+        ```
+    - 도메인 연결 관련  
+    ACM에서 등록한 도메인을 ALB에 연결함으로써 도메인을 통한 접근이 가능해진다.  
+        - OAuth2의 redirectUrl을 등록해주지 않아서 오류가 발생했는데  
+        https가 아닌 http주소로 추가해야 작동했다.  
+        이를 변경해야할것같다.
+        
+    
 ---
 ### local -> remote 파일전달
 ```
