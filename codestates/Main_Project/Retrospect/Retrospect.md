@@ -7,7 +7,7 @@
     + [- 임베디드](#-_임베디드)
   * [Member - 회원 도메인](#Member_-_회원_도메인)
     + [유효성검사](#유효성검사)
-  * [Pet - 반려동물 도메인](#Pet_-_반려동물_도메인)
+  * [Pet - 반려동물 도메인](https://github.com/liean17/TIL/blob/main/codestates/Main_Project/Retrospect/Retrospect.md#pet---%EB%B0%98%EB%A0%A4%EB%8F%99%EB%AC%BC-%EB%8F%84%EB%A9%94%EC%9D%B8)
     + [나이 계산](#나이_계산)
     + [데이터베이스를 고려한 설계](#데이터베이스를_고려한_설계)
   * [Comment - 댓글 도메인](#Comment_-_댓글_도메인)
