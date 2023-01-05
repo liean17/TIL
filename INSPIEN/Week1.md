@@ -50,12 +50,10 @@
     시간의 차이가 발생하면 로그를 정확하게 확인할 수 없고, 프로그램 실행에 있어서도 문제가 발생할 수 있다.  
     따라서 여러 서버의 시간을 동일하게 유지할 수 있는것이 NTP 서버이다.  
 
-
-
 ## 4. systemd-networkd-wait-online.service 비활성화
 - 설명  
     : 네트워크가 구성되기를 기다리는 시스템 서비스.  
-    systemd-network.service가 인식하고 관리하는 연결이 모두 성공 혹은 실패하고, 하나라도 연결될때 까지 기다린다.
+    systemd-network.service가 인식하고 관리하는 연결이 모두 configured되거나 실패하고, 하나라도 연결될때 까지 기다린다.
 - 방법  
     : `systemctl disable systemd-networkd-wait-online-service`
 - 이유
@@ -75,9 +73,11 @@
     APT::Periodic::Download-Upgradeable-Packages "0";
     APT::Periodic::AutocleanInterval "0";
     APT::Periodic::Unattended-Upgrade "0";
+
     ```  
     혹은
     ```
+
     # From
     APT::Periodic::Update-Package-Lists "1";
     APT::Periodic::Unattended-Upgrade "1";
@@ -85,6 +85,7 @@
     # To
     APT::Periodic::Update-Package-Lists "0";
     APT::Periodic::Unattended-Upgrade "0";
+
     ```
 - 이유  
     - 업데이트 되는 동안 패키지를 설치할 수 없거나 실행중인 프로그램이 종료되는 경우가 발생한다.  
@@ -93,3 +94,27 @@
     - 10periodic과 20auto-upgrades의 차이  
     : 오름차순으로 구문이 분석되어 적용된다.  
     또 20auto-upgrades에는 unattended-upgrades옵션이 있는데 최신 보안 패치 및 기타 업데이트를 자동으로 수행하고 시스템을 유지, 관리하는 서비스다.
+
+
+---
+### 보완할 것
+- hard limit 최대 수치의 이유, 초과해서 설정하는 방법
+
+$ sudo apt update
+// 업데이트 확인
+
+$ sudo apt upgrade -y
+// 가능한 업데이트 실행
+
+
+$ sudo reboot
+
+
+$ sudo passwd root
+- root활성화
+
+$ su
+- root 접근
+
+$ whoami
+- 사용자확인
