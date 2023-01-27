@@ -114,3 +114,9 @@ on node2 {
 - HA : 고가용성
 - DRBD : Distributed Replicated Block Device  
 블록 단위로 분산 복제하는 장치  
+
+---
+
+### 보충
+1. Pacemaker와 DRBD의 조합?
+2. DRBD는 가상 장치로써 각각 마운트해서 사용해야하는지 아니면 Pacemaker를 사용하면 즉각적으로 전환이 가능한건지
