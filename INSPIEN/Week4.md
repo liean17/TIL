@@ -100,3 +100,12 @@ on node2 {
     : 호스트 이름 변경 후 reboot을 하니 제대로 적용
     - 파일 시스템 리소스 구성에서 node1 서버(MASTER)에는 문제가 없으나 node2 서버에서 'no such file or directory' 라는 오류와 함께 공유가 안되는 문제  
     : node2 에 heartbeat를 설치하니 해결
+    - 중지한채로 다음날 실행해서 drbd상태를 확인하니  
+    `block drbd0 split-brain detected but unresolved dropping connection` 오류 발생  
+    승격 강등 동작은 했지만 수시로 오류 메세지가 발생하고  
+    승격 강등 관련 명령이 실행되지 않는 등 문제 발생  
+    : 클러스터 삭제 후 다시 생성해서 해결
+        - pcs 관련 명령에서 pacemaker 실행 오류가난다.
+        : 해결  
+        pcs cluster destroy --all 명령으로 클러스터를 다 박살내서그렇다.  
+        pcs 인증을 하고 다시 setup한 뒤 클러스터를 실행하면 됨.
