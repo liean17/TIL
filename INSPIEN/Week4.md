@@ -109,3 +109,9 @@ on node2 {
         : 해결  
         pcs cluster destroy --all 명령으로 클러스터를 다 박살내서그렇다.  
         pcs 인증을 하고 다시 setup한 뒤 클러스터를 실행하면 됨.
+    - nic추가 후 본딩 테스트시 노드 연결 오류  
+    : 본딩 테스트를 진행하고나니 이전처럼 노드가 각각 오프라인이 되어있었다.  
+    nic를 추가하면서 ip가 변경된 탓이었고, hosts파일을 수정하니 원래대로 돌아왔다.  
+        - drbdadm status에서 role, disk 는 확인되는데  
+        replication은 표시되지 않는 상황  
+        : cluster 설정 파일 ip 수정해줘야함
