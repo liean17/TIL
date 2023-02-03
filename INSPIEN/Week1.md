@@ -7,7 +7,9 @@
     `ulimit -a` / `ulimit -aH`
     2. 수정  
     `/etc/security/limits.conf` 실행 후  
-    <유저명> <soft/hard> <타입> <값> 형식으로 설정 후 저장 
+    <유저명> <soft/hard> <타입> <값> 형식으로 설정 후 저장
+    3. 최대 오픈 파일 수 변경  
+    `/etc/sysctl.conf`에 `fs.nr_open=5242880` 와 같이 설정
 - 이유  
     : 리눅스에서는 한번에 실행할 수 있는 파일의 갯수가 제한되어있다.  
     따라서 설정된 파일 갯수를 초과해서 파일을 열 수 없기때문에 시스템에 문제가 발생할 수 있다.  
@@ -105,7 +107,6 @@ $ sudo apt update
 
 $ sudo apt upgrade -y
 // 가능한 업데이트 실행
-
 
 $ sudo reboot
 
